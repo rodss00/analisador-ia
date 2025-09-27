@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processando...</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Analisando seus Dados...</h1>
+            <p>Por favor, aguarde. O processamento com IA pode levar alguns minutos.</p>
+        </header>
+        <main>
+            <div class="progress-section">
+                <p id="status-text">Iniciando...</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%;">0%</div>
+                </div>
+                <button id="cancel-btn" class="cancel-btn">Cancelar Processamento</button>
+            </div>
+        </main>
+    </div>
+    <script>
+        const taskId = "{{ task_id }}";
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        const statusInterval = setInterval(() => {
+            fetch(`/status/${taskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const progress = data.progress || 0;
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = progress + '%';
+                    
+                    if (data.status === 'PROCESSANDO') {
+                        statusText.textContent = `Processando... (${progress}%)`;
+                    }
+
+                    if (data.status === 'CONCLUÍDO') {
+                        clearInterval(statusInterval);
+                        statusText.textContent = 'Processamento Concluído! Redirecionando...';
+                        window.location.href = `/results/${data.result}`;
+                    } else if (data.status === 'ERRO') {
+                        clearInterval(statusInterval);
+                        alert(`Ocorreu um erro: ${data.result}`);
+                        window.location.href = '/';
+                    } else if (data.status === 'CANCELADO') {
+                         clearInterval(statusInterval);
+                         alert('O processamento foi cancelado.');
+                         window.location.href = '/';
+                    }
+                });
+        }, 2000);
+
+        cancelBtn.addEventListener('click', () => {
+            fetch(`/cancel/${taskId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    statusText.textContent = 'Cancelamento solicitado...';
+                    cancelBtn.disabled = true;
+                    cancelBtn.textContent = 'Cancelando...';
+                });
+        });
+    </script>
+</body>
+</html>

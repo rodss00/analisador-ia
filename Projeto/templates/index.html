@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador de Ordens de Serviço</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Analisador Inteligente de Ordens de Serviço</h1>
+            <p>Faça o upload da sua planilha CSV para extrair e quantificar avarias.</p>
+        </header>
+        <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="messages">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            <div class="upload-section">
+                <h2>Selecione sua Planilha</h2>
+                <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="upload-form">
+                    <label for="csvfile" class="file-label">
+                        <span id="file-name">Escolher arquivo...</span>
+                    </label>
+                    <input type="file" name="csvfile" id="csvfile" accept=".csv" required>
+                    <button type="submit" class="submit-btn">Processar Dados</button>
+                </form>
+                <div class="requirements">
+                    <p><strong>Requisito:</strong> A planilha deve conter a coluna <strong>`DESCRICAO DO SERVICO`</strong>.</p>
+                </div>
+            </div>
+        </main>
+        <footer><p>&copy; 2025 - Ferramenta de Análise IA</p></footer>
+    </div>
+    <script>
+        document.getElementById('csvfile').addEventListener('change', function() {
+            var fileName = this.files[0] ? this.files[0].name : 'Escolher arquivo...';
+            document.getElementById('file-name').textContent = fileName;
+        });
+    </script>
+</body>
+</html>
